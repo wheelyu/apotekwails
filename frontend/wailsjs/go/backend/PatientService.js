@@ -6,6 +6,10 @@ export function CreatePatient(arg1) {
   return window['go']['backend']['PatientService']['CreatePatient'](arg1);
 }
 
+export function DeletePatient(arg1) {
+  return window['go']['backend']['PatientService']['DeletePatient'](arg1);
+}
+
 export function GetAllPatients(arg1) {
   return window['go']['backend']['PatientService']['GetAllPatients'](arg1);
 }

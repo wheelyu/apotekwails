@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -97,7 +96,7 @@ func (p *PatientService) GetAllPatients(params PaginationParams) (*PaginatedPati
 	if err := query.
 		Limit(params.PageSize).
 		Offset(offset).
-		Order("status DESC"). // urutkan dari terbaru
+		Order("created_at DESC"). // urutkan dari terbaru
 		Find(&patients).Error; err != nil {
 		log.Println("❌ Failed to search patients:", err)
 		return nil, err
@@ -166,38 +165,36 @@ func (p *PatientService) GetTotalPatient() (PatientTotal, error) {
 	}, nil
 }
 
-func generatePatientCode(gender string) (string, error) {
-	var prefix string
-	switch strings.ToLower(gender) {
-	case "male", "laki-laki", "l":
-		prefix = "PM"
-	case "female", "perempuan", "p":
-		prefix = "PF"
-	default:
-		prefix = "PX"
-	}
+func generatePatientCode(name string) (string, error) {
 
-	now := time.Now()
-	datePart := now.Format("200601") // contoh: 202510
-	prefixWithDate := fmt.Sprintf("%s-%s", prefix, datePart)
+	prefix := strings.ToUpper(string(name[0]))
 
 	var lastPatient models.Patient
 	result := database.DB.
-		Where("code LIKE ?", prefixWithDate+"-%").
-		Order("id desc").
+		Where("code LIKE ?", prefix+"%").
+		Order("id DESC").
 		First(&lastPatient)
 
-	if result.Error != nil && result.RowsAffected == 0 {
-		return fmt.Sprintf("%s-%04d", prefixWithDate, 1), nil
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return fmt.Sprintf("%s%04d", prefix, 1), nil
 	}
 
+	// Ambil angka terakhir, tapi fleksibel (tidak harus 4 digit)
 	var lastNumber int
-	_, err := fmt.Sscanf(lastPatient.Code, prefixWithDate+"-%04d", &lastNumber)
+	_, err := fmt.Sscanf(lastPatient.Code, prefix+"%d", &lastNumber)
 	if err != nil {
 		return "", err
 	}
 
-	newCode := fmt.Sprintf("%s-%04d", prefixWithDate, lastNumber+1)
+	// Jika lastNumber < 9999 → pakai 4 digit
+	// Jika sudah 10000 ke atas → otomatis jadi S10000 tanpa leading zero
+	var newCode string
+	if lastNumber < 9999 {
+		newCode = fmt.Sprintf("%s%04d", prefix, lastNumber+1)
+	} else {
+		newCode = fmt.Sprintf("%s%d", prefix, lastNumber+1)
+	}
+
 	return newCode, nil
 }
 
@@ -214,7 +211,7 @@ func (p *PatientService) CreatePatient(input models.CreateInput) (models.Patient
 	}
 
 	// Generate kode otomatis
-	code, err := generatePatientCode(input.Gender)
+	code, err := generatePatientCode(input.Name)
 	if err != nil {
 		return models.Patient{}, err
 	}
@@ -304,4 +301,18 @@ func (p *PatientService) GetPatientByCode(code string) (models.Patient, error) {
 		return models.Patient{}, result.Error
 	}
 	return patient, nil
+}
+
+func (p *PatientService) DeletePatient(code string) error {
+	var patient models.Patient
+	result := database.DB.Where("code = ?", code).First(&patient)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	result = database.DB.Delete(&patient)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

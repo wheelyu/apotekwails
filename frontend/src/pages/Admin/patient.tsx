@@ -4,18 +4,31 @@ import BreadCrumbs from '@/components/breadCrumbs'
 import customStyles from '@/utils/customStyles'
 import TabActionHeader from '@/components/tabActionHeader';
 import SummaryCardGrid from '@/components/summaryCardGrid';
-import { GetAllPatients } from '../../../wailsjs/go/backend/PatientService';
+import { GetAllPatients, DeletePatient } from '../../../wailsjs/go/backend/PatientService';
 import { models } from "wailsjs/go/models";
 import { useState, useEffect } from "react";
 import ModalAdd from "@/Modal/Patient/AddPatient";
 import ModalView from "@/Modal/Patient/DetailPatient";
 import ModalRegist from "@/Modal/Patient/RegistPatient";
 import ModalInsert from "@/Modal/Patient/ImportPatient";
+import { useSweetAlert } from '../../alert/shadcnAlert';
+import { Toast } from "@/alert/toast";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
 import {
   Search,
   Plus,
   Users,
-  X
+  X,
+  MoreVertical,
+  Eye,
+  PlusCircle,
+  Trash
 } from 'lucide-react';
 
 type PatientFiltered =  {
@@ -37,6 +50,7 @@ const Patient = () => {
             nik: '',
             phone: '',
         });
+        const { showAlert } = useSweetAlert();
         const [modalAddOpen, setModalAddOpen] = useState(false);
         const [modalViewOpen, setModalViewOpen] = useState(false);
         const [modalInsertOpen, setModalInsertOpen] = useState(false);
@@ -108,31 +122,60 @@ const Patient = () => {
             name: 'Aksi',
             cell: (row: PatientFiltered) => (
                 <div>
-
-                <div className=' flex gap-2'>
-                    <button
-                        title="lihat data"
-                        className="px-2 py-2  flex justify-between text-white bg-blue-500  rounded  cursor-pointer transition-all duration-300 border border-blue-500 hover:bg-blue-600"
-                        onClick={handleView.bind(null, row.code)}
-                        >
-                        Lihat Detail
-                    </button>
-                    <button
-                        title="buat antrian"
-                        className="px-2 py-2 text-white bg-green-500  rounded  cursor-pointer transition-all duration-300 border border-green-500 hover:bg-green-600"
-                        onClick={handleRegist.bind(null, row.ID, row.code, row.name)}
-                    >
-                        Buat Antrian
-                    </button>
-                   
-                    
-                </div>
-                
+                    <div className="flex items-start">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="p-2 bg-gray-100 rounded-lg transition-colors">
+                                <MoreVertical className="w-5 h-5 text-gray-600" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={handleView.bind(null, row.code)} className="cursor-pointer ">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Detail
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleRegist.bind(null, row.ID, row.code, row.name)} className="cursor-pointer ">
+                                <PlusCircle className="w-4 h-4 mr-2" />
+                                Tambah Antrian
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleDelete.bind(null, row.code)}  className="cursor-pointer bg-red-500 text-white hover:bg-red-600">
+                                <Trash className="w-4 h-4 mr-2" />
+                                Hapus Data
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </div>
                 </div>
             ),
         }
     ];
-
+        const handleDelete = async (code: string) => {
+            await showAlert(
+                    'warning',
+                    'Delete', 
+                    'Anda yakin ingin menghapus data ini?',
+                    {
+                      showCancel: true,
+                      onConfirm: () => {
+                        try{
+                            DeletePatient(code);
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Data berhasil dihapus',
+                            })
+                            getPatients();
+                        }catch(error:any){
+                            Toast.fire({
+                                icon: 'error',
+                                title: error,
+                            })
+                        }
+                      },
+                    }
+                  );
+            
+        }
     const handleRegist = (id: number, code: string, name: string) => {
         setModalViewOpen(false);
         console.log(name)

@@ -5,6 +5,8 @@ import {backend} from '../models';
 
 export function CreatePatient(arg1:models.CreateInput):Promise<models.Patient>;
 
+export function DeletePatient(arg1:string):Promise<void>;
+
 export function GetAllPatients(arg1:backend.PaginationParams):Promise<backend.PaginatedPatients>;
 
 export function GetPatientByCode(arg1:string):Promise<models.Patient>;
