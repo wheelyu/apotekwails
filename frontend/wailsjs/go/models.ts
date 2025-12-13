@@ -103,7 +103,7 @@ export namespace backend {
 	    address: string;
 	    code: string;
 	    nik: string;
-	    phone: string;
+	    emergency_contact_name: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new PaginationParams(source);
@@ -117,7 +117,7 @@ export namespace backend {
 	        this.address = source["address"];
 	        this.code = source["code"];
 	        this.nik = source["nik"];
-	        this.phone = source["phone"];
+	        this.emergency_contact_name = source["emergency_contact_name"];
 	    }
 	}
 	export class PatientTotal {

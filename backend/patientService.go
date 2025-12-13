@@ -16,13 +16,13 @@ type PatientService struct{}
 // GetAllPatients mengembalikan semua data pasien dari tabel patients
 // Struct untuk parameter pagination
 type PaginationParams struct {
-	Page     int    `json:"page"`
-	PageSize int    `json:"pageSize"`
-	Name     string `json:"name"`
-	Address  string `json:"address"`
-	Code     string `json:"code"`
-	Nik      string `json:"nik"`
-	Phone    string `json:"phone"`
+	Page                   int    `json:"page"`
+	PageSize               int    `json:"pageSize"`
+	Name                   string `json:"name"`
+	Address                string `json:"address"`
+	Code                   string `json:"code"`
+	Nik                    string `json:"nik"`
+	Emergency_contact_name string `json:"emergency_contact_name"`
 }
 
 // Struct untuk response pagination
@@ -79,8 +79,8 @@ func (p *PatientService) GetAllPatients(params PaginationParams) (*PaginatedPati
 		query = query.Where("nik LIKE ?", "%"+params.Nik+"%")
 	}
 
-	if params.Phone != "" {
-		query = query.Where("phone LIKE ?", "%"+params.Phone+"%")
+	if params.Emergency_contact_name != "" {
+		query = query.Where("emergency_contact_name LIKE ?", "%"+params.Emergency_contact_name+"%")
 	}
 
 	// Hitung total data setelah filter
@@ -215,11 +215,14 @@ func (p *PatientService) CreatePatient(input models.CreateInput) (models.Patient
 	if err != nil {
 		return models.Patient{}, err
 	}
-
+	var nameToUpper string
+	if input.Name != "" {
+		nameToUpper = strings.ToUpper(input.Name)
+	}
 	patient := models.Patient{
 		Code:                    code,
 		Nik:                     input.Nik,
-		Name:                    input.Name,
+		Name:                    nameToUpper,
 		Gender:                  input.Gender,
 		DateOfBirth:             input.DateOfBirth,
 		Phone:                   input.Phone,

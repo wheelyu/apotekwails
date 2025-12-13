@@ -12,6 +12,7 @@ import ModalView from "@/Modal/Patient/DetailPatient";
 import ModalRegist from "@/Modal/Patient/RegistPatient";
 import ModalInsert from "@/Modal/Patient/ImportPatient";
 import { useSweetAlert } from '../../alert/shadcnAlert';
+import  useFormatAge  from "@/utils/useFormatAge";
 import { Toast } from "@/alert/toast";
 import {
     DropdownMenu,
@@ -36,10 +37,9 @@ type PatientFiltered =  {
   code: string;
   nik?: string;
   name: string;
-  gender: string;
-  phone: string;
-  status: boolean;
+  emergency_contact_name: string;
   address: string;
+  date_of_birth: any;
 };
 const Patient = () => {
         const [patientData, setPatientData] = useState<models.Patient[]>([]);
@@ -48,7 +48,7 @@ const Patient = () => {
             address: '',
             code: '',
             nik: '',
-            phone: '',
+            emergency_contact_name: '',
         });
         const { showAlert } = useSweetAlert();
         const [modalAddOpen, setModalAddOpen] = useState(false);
@@ -75,8 +75,8 @@ const Patient = () => {
                 name: searchData.name, 
                 address: searchData.address, 
                 code: searchData.code, 
-                nik: searchData.nik,
-                phone: searchData.phone, 
+                nik: searchData.nik, 
+                emergency_contact_name: searchData.emergency_contact_name,
                 page, 
                 pageSize
             });
@@ -96,11 +96,23 @@ const Patient = () => {
             selector: (row: PatientFiltered) => row.code,
             sortable: true,
         },
-         {
+        {
             name: 'Nama',
             selector: (row: PatientFiltered) => row.name,
             sortable: true,
         },  
+        {
+            name: 'Umur',
+            selector: (row: PatientFiltered) => useFormatAge(new Date(row.date_of_birth)),
+            sortable: true,
+            cell : (row: PatientFiltered) => (
+                <div>
+                    <div className="flex items-start">
+                        {useFormatAge(new Date(row.date_of_birth))} Tahun
+                    </div>
+                </div>
+            ),
+        },
         {
             name: 'NIK',
             selector: (row: PatientFiltered) => row.nik || '-',
@@ -113,8 +125,8 @@ const Patient = () => {
             sortable: true,
         },
          {
-            name: 'No Hp',
-            selector: (row: PatientFiltered) => row.phone || '-',
+            name: 'Kontak Darurat',
+            selector: (row: PatientFiltered) => row.emergency_contact_name || '-',
             sortable: true,
 
         },
@@ -246,7 +258,7 @@ const Patient = () => {
                 <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-100 min-h-[600px]'>
                     {/* Tab Navigation */}
                     <TabActionHeader
-                        total_rows={(searchData.name || searchData.address || searchData.code || searchData.nik || searchData.phone) ? totalRows : pageSize}
+                        total_rows={(searchData.name || searchData.address || searchData.code || searchData.nik || searchData.emergency_contact_name) ? totalRows : pageSize}
                         total_patient={totalPatient}
                         onImport={handleImport}
                         onExport={exportData}
@@ -287,10 +299,6 @@ const Patient = () => {
                             />
                         </div>
                         </div>
-
-                       
-                        
-
                         {/* NIK */}
                         <div className="relative">
                         <label htmlFor="nik" className="block text-sm font-medium text-gray-700 mb-1">
@@ -325,15 +333,15 @@ const Patient = () => {
                         {/* No Hp */}
                         <div className="relative">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                            No Hp
+                            Kontak Darurat
                         </label>
                         <input
                             type="text"
-                            id="phone"
-                            name="phone"
+                            id="emergency_contact_name"
+                            name="emergency_contact_name"
                             className="border border-gray-300 bg-white rounded p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                            placeholder="Cari No Hp Pasien"
-                            value={searchData.phone}
+                            placeholder="Cari Nama Kontak Darurat"
+                            value={searchData.emergency_contact_name}
                             onChange={handleChange}
                         />
                         </div>
@@ -341,11 +349,11 @@ const Patient = () => {
 
                     {/* Button Section */}
                     <div className="mt-4 flex justify-end absolute top-2.5 right-1">
-                        {(searchData.name || searchData.address || searchData.code || searchData.nik || searchData.phone) ? (
+                        {(searchData.name || searchData.address || searchData.code || searchData.nik || searchData.emergency_contact_name) ? (
                         <button
                             type="button"
                             className="flex items-center gap-2 text-white bg-red-500 px-5 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 shadow-md"
-                            onClick={() => setSearchData({ name: '', address: '', code: '', nik: '', phone: '' })}
+                            onClick={() => setSearchData({ name: '', address: '', code: '', nik: '', emergency_contact_name: '' })}
                         >
                             <X size={20} />
                         </button>

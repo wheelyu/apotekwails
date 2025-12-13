@@ -13,6 +13,9 @@ const GuestRoute = ({ redirectPath }: { redirectPath: string }) => {
         if (decodedToken.role === "none" ) {
             return <Navigate to="/none" replace />;
         }
+        if (decodedToken.role === "dokter" ) {
+            return <Navigate to="/none" replace />;
+        }
             return <Navigate to={redirectPath} replace />;
     }
 

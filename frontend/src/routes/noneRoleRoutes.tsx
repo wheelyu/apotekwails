@@ -10,7 +10,7 @@ const NoneRoleRoute: React.FC = () => {
         return <Navigate to={"/login"} replace />;
     }
 
-    if (decodedToken.role !== "none" ) {
+    if (decodedToken.role !== "none" && decodedToken.role !== "dokter" ) {
         Toast.fire({
             icon: "error",
             title: "you got role",
