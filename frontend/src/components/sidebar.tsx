@@ -6,7 +6,8 @@ import {
   FileText,
   Package,
   Settings,
-  UserSquare
+  UserSquare,
+  Banknote
 } from 'lucide-react';
 import useSideBarStore from '@/stores/useSideBarStore';
 import { useLocation, Link } from 'react-router';
@@ -23,10 +24,11 @@ const Sidebar = () => {
       { icon: <Calendar/>, label: 'Antrian', to: '/order' },
       { icon: <FileText/>, label: 'Rekam Medis', to: '/records' },
       { icon: <Package/>, label: 'Farmasi', to: '/pharmacy' },
-      { icon: <Settings/>, label: 'Pengaturan', to: '/settings' },
+      { icon: <Banknote/>, label: 'Pembayaran', to: '/payment' },
     ];
     const otherItems = [
       { icon: <UserSquare/>, label: 'Manajemen User', to: '/user' },
+       { icon: <Settings/>, label: 'Pengaturan', to: '/settings' },
     ];
 
     // Modified NavSection component with active state

@@ -10,6 +10,10 @@ export function ExpireOldVisits() {
   return window['go']['backend']['VisitService']['ExpireOldVisits']();
 }
 
+export function GetAllInvoiceToday(arg1) {
+  return window['go']['backend']['VisitService']['GetAllInvoiceToday'](arg1);
+}
+
 export function GetAllVisitsToday(arg1) {
   return window['go']['backend']['VisitService']['GetAllVisitsToday'](arg1);
 }

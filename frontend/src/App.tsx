@@ -1,7 +1,7 @@
 import { HashRouter as Router, Routes, Route} from "react-router";
 import { SplashScreen, Login, NotFoundPage, NoneRolePage } from './pages';
 import { GuestRoute, AdminRoute, NoneRoleRoute } from './routes';
-import { Dashboard, Patient, Order, User } from './pages/Admin';
+import { Dashboard, Patient, Order, User, PaymentPage } from './pages/Admin';
 import { SweetAlertProvider } from './alert/shadcnAlert';
 import useIdleTimer from "./utils/useIdleTimer";
 import useAuthStore from '@/stores/useAuthStore';
@@ -26,6 +26,7 @@ function App() {
             <Route path="/order" element={<Order />} />
             <Route path="/records" element={<NotFoundPage />} />
             <Route path="/pharmacy" element={<NotFoundPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/settings" element={<NotFoundPage />} />
             <Route path="/user" element={<User />} />
           </Route>

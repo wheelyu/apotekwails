@@ -392,6 +392,7 @@ export namespace models {
 	    complaint: string;
 	    queue_number: number;
 	    status: string;
+	    is_paid: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Visit(source);
@@ -413,6 +414,7 @@ export namespace models {
 	        this.complaint = source["complaint"];
 	        this.queue_number = source["queue_number"];
 	        this.status = source["status"];
+	        this.is_paid = source["is_paid"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

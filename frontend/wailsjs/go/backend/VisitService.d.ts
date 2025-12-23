@@ -6,6 +6,8 @@ export function CreateVisit(arg1:number,arg2:number,arg3:string,arg4:string):Pro
 
 export function ExpireOldVisits():Promise<void>;
 
+export function GetAllInvoiceToday(arg1:string):Promise<Array<models.Visit>>;
+
 export function GetAllVisitsToday(arg1:string):Promise<Array<models.Visit>>;
 
 export function UpdatePatientStatus():Promise<void>;

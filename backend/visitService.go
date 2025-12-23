@@ -64,6 +64,7 @@ func (p *VisitService) CreateVisit(patientID, doctorID uint, department, complai
 		Status:      "Menunggu",
 		VisitDate:   time.Now(),
 		VisitTime:   time.Now().Format("15:04:05"),
+		IsPaid:      false,
 	}
 
 	if err := tx.Create(&visit).Error; err != nil {
@@ -99,7 +100,7 @@ func (p *VisitService) GetAllVisitsToday(date string) []models.Visit {
 	if err := database.DB.
 		Preload("Doctor").
 		Preload("Patient").
-		Where("DATE(created_at) = ?", date).
+		Where("DATE(created_at) = ? && is_paid = ?", date, false).
 		Find(&visits).Error; err != nil {
 		log.Println("❌ Failed to get visits by date:", err)
 		return []models.Visit{}
@@ -107,7 +108,26 @@ func (p *VisitService) GetAllVisitsToday(date string) []models.Visit {
 
 	return visits
 }
+func (p *VisitService) GetAllInvoiceToday(date string) []models.Visit {
+	var visits []models.Visit
 
+	// Kalau tanggal kosong, pakai hari ini
+	if date == "" {
+		date = time.Now().Format("2006-01-02")
+	}
+
+	// Ambil visit sesuai tanggal
+	if err := database.DB.
+		Preload("Doctor").
+		Preload("Patient").
+		Where("DATE(created_at) = ? && status = ?", date, "Selesai").
+		Find(&visits).Error; err != nil {
+		log.Println("❌ Failed to get invoice by date:", err)
+		return []models.Visit{}
+	}
+
+	return visits
+}
 func (p *VisitService) UpdateQueueNumber(visitID uint, newQueueNumber int) error {
 	var visit models.Visit
 

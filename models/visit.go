@@ -18,4 +18,5 @@ type Visit struct {
 	Complaint   string    `gorm:"type:text" json:"complaint"`               // Keluhan pasien
 	QueueNumber int       `json:"queue_number"`                             // Nomor antrean
 	Status      string    `gorm:"size:20;default:'Menunggu'" json:"status"` // Menunggu, Diperiksa, Selesai, Batal
+	IsPaid      bool      `gorm:"default:false" json:"is_paid"`
 }
