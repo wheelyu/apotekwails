@@ -11,7 +11,7 @@ const AdminRoute: React.FC = () => {
         return <Navigate to={"/login"} replace />;
     }
 
-    if (decodedToken.role !== "superadmin" &&  decodedToken.role !== "admin" ) {
+    if ( decodedToken.role !== "admin" ) {
         Toast.fire({
             icon: "error",
             title: "Only superadmin and admin can access",

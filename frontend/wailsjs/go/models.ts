@@ -4,7 +4,8 @@ export namespace backend {
 	    id: number;
 	    name: string;
 	    email: string;
-	    role: string;
+	    role: string[];
+	    permissions: string[];
 	    token: string;
 	
 	    static createFrom(source: any = {}) {
@@ -17,6 +18,7 @@ export namespace backend {
 	        this.name = source["name"];
 	        this.email = source["email"];
 	        this.role = source["role"];
+	        this.permissions = source["permissions"];
 	        this.token = source["token"];
 	    }
 	}
@@ -181,6 +183,54 @@ export namespace models {
 	        this.insurance_number = source["insurance_number"];
 	    }
 	}
+	export class Permission {
+	    ID: number;
+	    Code: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Permission(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.Code = source["Code"];
+	    }
+	}
+	export class Role {
+	    ID: number;
+	    Name: string;
+	    Permissions: Permission[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Role(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.Name = source["Name"];
+	        this.Permissions = this.convertValues(source["Permissions"], Permission);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class User {
 	    ID: number;
 	    // Go type: time
@@ -192,10 +242,11 @@ export namespace models {
 	    Name: string;
 	    Email: string;
 	    Password: string;
+	    Roles: Role[];
+	    image_url: string;
 	    Phone: string;
 	    gender: string;
 	    date_of_birth: string;
-	    Role: string;
 	    Token: string;
 	
 	    static createFrom(source: any = {}) {
@@ -211,10 +262,11 @@ export namespace models {
 	        this.Name = source["Name"];
 	        this.Email = source["Email"];
 	        this.Password = source["Password"];
+	        this.Roles = this.convertValues(source["Roles"], Role);
+	        this.image_url = source["image_url"];
 	        this.Phone = source["Phone"];
 	        this.gender = source["gender"];
 	        this.date_of_birth = source["date_of_birth"];
-	        this.Role = source["Role"];
 	        this.Token = source["Token"];
 	    }
 	
@@ -372,6 +424,8 @@ export namespace models {
 		    return a;
 		}
 	}
+	
+	
 	
 	export class Visit {
 	    ID: number;

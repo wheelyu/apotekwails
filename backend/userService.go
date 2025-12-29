@@ -21,11 +21,12 @@ type LoginResponse struct {
 
 // Struct user detail yang dikirim ke frontend
 type UserDetail struct {
-	ID    uint   `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
-	Token string `json:"token"`
+	ID          uint     `json:"id"`
+	Name        string   `json:"name"`
+	Email       string   `json:"email"`
+	Roles       []string `json:"role"`
+	Permissions []string `json:"permissions"`
+	Token       string   `json:"token"`
 }
 
 // Struct utama untuk service user
@@ -35,22 +36,42 @@ type UserService struct{}
 func (u *UserService) Login(email, password string) LoginResponse {
 	var user models.User
 
-	// Cari user berdasarkan email
-	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	// 1. Ambil user + role + permission
+	if err := database.DB.
+		Preload("Roles.Permissions").
+		Where("email = ?", email).
+		First(&user).Error; err != nil {
 		return LoginResponse{Success: false, Message: "Email tidak ditemukan"}
 	}
 
-	// Cek password dengan bcrypt
+	// 2. Cek password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return LoginResponse{Success: false, Message: "Password salah"}
 	}
 
-	// Buat token JWT
+	// 3. Ambil roles & permissions (unique)
+	roleNames := []string{}
+	permMap := map[string]bool{}
+
+	for _, role := range user.Roles {
+		roleNames = append(roleNames, role.Name)
+		for _, perm := range role.Permissions {
+			permMap[perm.Code] = true
+		}
+	}
+
+	permissions := []string{}
+	for p := range permMap {
+		permissions = append(permissions, p)
+	}
+
+	// 4. JWT
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
-		"email":   user.Email,
-		"role":    user.Role,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"user_id":     user.ID,
+		"email":       user.Email,
+		"roles":       roleNames,
+		"permissions": permissions,
+		"exp":         time.Now().Add(24 * time.Hour).Unix(),
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)
@@ -58,19 +79,21 @@ func (u *UserService) Login(email, password string) LoginResponse {
 		return LoginResponse{Success: false, Message: "Gagal membuat token"}
 	}
 
-	// Return sukses
+	// 5. Response
 	return LoginResponse{
 		Success: true,
 		Message: "Login berhasil",
 		User: &UserDetail{
-			ID:    user.ID,
-			Name:  user.Name,
-			Email: user.Email,
-			Role:  user.Role,
-			Token: tokenString,
+			ID:          user.ID,
+			Name:        user.Name,
+			Email:       user.Email,
+			Roles:       roleNames,
+			Permissions: permissions,
+			Token:       tokenString,
 		},
 	}
 }
+
 func (u *UserService) Logout(email string) LoginResponse {
 	var user models.User
 	// Cari user berdasarkan email
@@ -111,7 +134,6 @@ func (u *UserService) CreateUser(name, email, password, role string) (models.Use
 	user.Name = name
 	user.Email = email
 	user.Password = string(hashedPassword)
-	user.Role = role
 	user.Gender = ""
 	user.Phone = ""
 	user.DateOfBirth = time.Now().Format("2006-01-02")
@@ -143,7 +165,6 @@ func (u *UserService) UpdateUser(id uint, name, email, role, gender, phone, date
 
 	user.Name = name
 	user.Email = email
-	user.Role = role
 	user.Gender = gender
 	user.Phone = phone
 	user.DateOfBirth = dateOfBirth

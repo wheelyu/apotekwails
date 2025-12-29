@@ -26,7 +26,7 @@ func ConnectDatabase() {
 	if err != nil {
 		log.Fatalf("Failed to connect database: %v", err)
 	}
-	db.AutoMigrate(&models.User{}, &models.Doctor{}, &models.Patient{}, &models.Visit{})
+	db.AutoMigrate(&models.User{}, &models.Doctor{}, &models.Patient{}, &models.Visit{}, &models.Role{}, &models.UserRole{}, &models.Permission{}, &models.RolePermission{})
 	DB = db
 	fmt.Println("✅ Connected to MySQL successfully!")
 
